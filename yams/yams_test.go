@@ -1,0 +1,3 @@
+package yams
+
+//func Test() {}
