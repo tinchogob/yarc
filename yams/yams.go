@@ -38,6 +38,7 @@ type op struct {
 const add = "add"
 const find = "find"
 const flush = "flush"
+const count = "count"
 
 // Yet Another Mockup Server
 func New(port int) (*server, error) {
@@ -59,21 +60,33 @@ func New(port int) (*server, error) {
 }
 
 func (s *server) runMocks() {
-	var mocks []Mock
+	mocks := make(map[string]Mock)
 
 	for operation := range s.ops {
 		switch operation.code {
 		case add:
-			mocks = append(mocks, operation.argument)
-		case flush:
-			mocks = nil
+
+			m := mocks[operation.argument.key()]
+			if m.key() == operation.argument.key() {
+				m.Times++
+			} else {
+				m = operation.argument
+			}
+			mocks[m.key()] = m
+
 		case find:
+
 			for _, m := range mocks {
 				if ok, err := regexp.MatchString(m.key(), operation.argument.key()); ok && err == nil {
 					operation.response <- m
 					m.Times--
+					mocks[m.key()] = m
 				}
 			}
+			close(operation.response)
+
+		case flush:
+			mocks = make(map[string]Mock)
 		}
 	}
 }
@@ -116,11 +129,19 @@ func (s *server) Close() {
 	s.mockServer.Close()
 }
 
-func (m *Mock) key() string {
+func (m Mock) key() string {
 	return fmt.Sprintf("%s_%s", m.Method, m.URL)
 }
 
-func (m *Mock) match(req *http.Request) error {
+func (m Mock) match(req *http.Request) error {
+	if m.Method != req.Method {
+		return fmt.Errorf("no match for %s %s", req.Method, req.URL.String())
+	}
+
+	if ok, err := regexp.MatchString(m.key(), req.URL.String()); ok && err == nil {
+		return fmt.Errorf("no match for %s %s", req.Method, req.URL.String())
+	}
+
 	defer req.Body.Close()
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -131,14 +152,18 @@ func (m *Mock) match(req *http.Request) error {
 		return fmt.Errorf("no match for %s %s [body mismatch]", req.Method, req.URL.String())
 	}
 
-	if len(m.ReqHeaders) > 0 && !reflect.DeepEqual(m.ReqHeaders, req.Header) {
-		return fmt.Errorf("no match for %s %s [headers mismatch]", req.Method, req.URL.String())
+	if len(m.ReqHeaders) > 0 {
+		for name, values := range m.ReqHeaders {
+			if !reflect.DeepEqual(req.Header[name], values) {
+				return fmt.Errorf("no match for %s %s [headers mismatch]", req.Method, req.URL.String())
+			}
+		}
 	}
 
 	return nil
 }
 
-func (m *Mock) write(response http.ResponseWriter) error {
+func (m Mock) write(response http.ResponseWriter) error {
 	response.WriteHeader(m.RespStatus)
 	for k, v := range m.RespHeaders {
 		for _, vv := range v {
