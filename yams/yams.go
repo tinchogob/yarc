@@ -125,6 +125,9 @@ func (s *server) Add(mocks ...Mock) error {
 }
 
 func (s *server) Close() {
+	if s == nil {
+		return
+	}
 	close(s.ops)
 	s.mockServer.Close()
 }
