@@ -12,8 +12,8 @@ Check [usage](#usage) or the [examples](examples) to learn how to yarc into your
 * Native JSON support for sending/receiveng structs
 * Clean access to http.Request && http.Response
 * Collection of helpers for nice defaults
-* Mock server for integration tests: [Yams](#Yams)
-* Stupid Simple cache implementation: [Yasci](#Yasci)
+* Mock server for integration tests: [Yams](#https://github.com/tinchogob/yarc/tree/master/yams)
+* ~~Stupid~~ Simple cache implementation: [Yasci](#https://github.com/tinchogob/yarc/tree/master/yasci)
 
 ## Install
 
