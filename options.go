@@ -23,7 +23,7 @@ type Options struct {
 	ReqBody []byte
 	Headers http.Header
 	Client  *http.Client
-	withs   []withFunc
+	withs   []WithFunc
 	resBody func(*http.Response) (interface{}, interface{}, error)
 	trace   func(Options) (*httptrace.ClientTrace, error)
 	cache   Cache
@@ -218,10 +218,10 @@ func WithCache(c Cache) optionFunc {
 }
 
 //With adds with to the request's with functions.
-func With(with withFunc) optionFunc {
+func With(with WithFunc) optionFunc {
 	return func(opts Options) (Options, error) {
 		q := len(opts.withs)
-		withs := make([]withFunc, q)
+		withs := make([]WithFunc, q)
 		for i, w := range opts.withs {
 			withs[i] = w
 		}
@@ -233,17 +233,17 @@ func With(with withFunc) optionFunc {
 
 // Provides complete access to the request.
 // You can modify or even return a new request.
-type withFunc func(opts Options, req *http.Request) *http.Request
+type WithFunc func(opts Options, req *http.Request) *http.Request
 
 // Runs the request with ctx context.
-func Context(ctx context.Context) withFunc {
+func Context(ctx context.Context) WithFunc {
 	return func(opts Options, req *http.Request) *http.Request {
 		return req.WithContext(ctx)
 	}
 }
 
 // Sets the request basic auth to username and password.
-func BasicAuth(username string, password string) withFunc {
+func BasicAuth(username string, password string) WithFunc {
 	return func(opts Options, req *http.Request) *http.Request {
 		req.SetBasicAuth(username, password)
 		return req

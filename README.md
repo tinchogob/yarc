@@ -122,7 +122,9 @@ Yarcs provides an extension point called `With` to change/enhance each request
 r, err := client.Go(
   GET(),
   Path("/items/1234567"),
-  With(Context(context.Background())),
+  With(func(opts Yarc.Options, req *http.Request) *http.Request {
+      return req.WithContext(context.Background())
+  })
 )
 ```
 

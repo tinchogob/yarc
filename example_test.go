@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinchogob/yarc/yaci"
 	"github.com/tinchogob/yarc/yams"
+	"github.com/tinchogob/yarc/yasci"
 )
 
 func ExampleYarc() {
@@ -38,7 +38,7 @@ func ExampleYarc() {
 		Header("Cache-Control", "no-cache"),
 		Trace(BaseTrace()),
 		With(Debug(os.Stdout)),
-		WithCache(yaci.New(time.Millisecond*100, 100)),
+		WithCache(yasci.New(time.Millisecond*100, 100)),
 	)
 
 	if err != nil {
@@ -89,7 +89,6 @@ func ExampleYarc() {
 			}
 
 			fmt.Printf("%d - %s\n", res.StatusCode, resp.ID)
-			//Output: 200 - pong
 
 		}()
 	}

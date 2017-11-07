@@ -1,4 +1,4 @@
-package yaci
+package yasci
 
 import (
 	"bytes"

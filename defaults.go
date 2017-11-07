@@ -55,7 +55,7 @@ func BaseTrace() func(Options) (*httptrace.ClientTrace, error) {
 	}
 }
 
-func Debug(out io.Writer) withFunc {
+func Debug(out io.Writer) WithFunc {
 	return func(opts Options, req *http.Request) *http.Request {
 		if r, err := httputil.DumpRequest(req, true); err != nil {
 			out.Write([]byte(err.Error()))

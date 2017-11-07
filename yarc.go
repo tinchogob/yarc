@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+//Yarc is an HTTP request builder and sender
 type Yarc struct {
 	opts Options
 }
@@ -31,6 +32,8 @@ func (n nopCache) Set(key *http.Request, response *http.Response) error {
 	return nil
 }
 
+// Yikes is yarc's error implementation. Since every non 2xx response is considered an error
+// yikes carries the response body if available.
 type Yikes struct {
 	e    error
 	Body interface{}
@@ -40,8 +43,8 @@ func (ye Yikes) Error() string {
 	return ye.e.Error()
 }
 
-// Yarc builder. Option functions here will apply to
-// every request made with this instance.
+// New returns a Yarc builder. Option functions passed here will be applied to
+// each request made with this instance.
 func New(optsFunc ...optionFunc) (*Yarc, error) {
 	opts := Options{
 		cache:   nopCache{},
@@ -62,8 +65,9 @@ func New(optsFunc ...optionFunc) (*Yarc, error) {
 	}, nil
 }
 
-// Go sends an HTTP request and returns an HTTP response
-// Option functions here will apply only to this request
+// Go builds an *http.Request, applies instance/args options and makes the request.
+// Returns an *http.Response and an Yikes error, if any.
+// Option functions passed here will apply only to this request
 func (y *Yarc) Go(optsFunc ...optionFunc) (*http.Response, error) {
 	opts := y.opts
 	var err error
